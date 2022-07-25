@@ -7,13 +7,13 @@ import 'models/transaction.dart';
 
 void main() {
   // these lines are written to fix the app orientation either to portrait or landscape mode
-  WidgetsFlutterBinding.ensureInitialized();
-  SystemChrome.setPreferredOrientations(
-    [
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
-    ],
-  );
+  // WidgetsFlutterBinding.ensureInitialized();
+  // SystemChrome.setPreferredOrientations(
+  //   [
+  //     DeviceOrientation.portraitUp,
+  //     DeviceOrientation.portraitDown,
+  //   ],
+  // );
 
   runApp(const MyApp());
 }
@@ -143,6 +143,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final mediaQuery = MediaQuery.of(context);
+
     final variableAppBar = AppBar(
       title: const Text('Expense Tracker'),
       actions: [
@@ -157,29 +159,43 @@ class _MyHomePageState extends State<MyHomePage> {
       ],
     );
 
+    final double variableHeight = mediaQuery.size.height -
+        variableAppBar.preferredSize.height -
+        mediaQuery.padding.top;
+
+    final isLandscape = mediaQuery.orientation == Orientation.landscape;
+
     return Scaffold(
       backgroundColor: Colors.lightGreenAccent,
       appBar: variableAppBar,
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            SizedBox(
-              height: (MediaQuery.of(context).size.height -
-                      variableAppBar.preferredSize.height -
-                      MediaQuery.of(context).padding.top) *
-                  0.4,
-              child: Chart(_recentTransactions),
+      body: isLandscape
+          ? PageView(
+              children: [
+                SizedBox(
+                  height: variableHeight * 0.8,
+                  child: TransactionList(_userTransaction, _deleteTransaction),
+                ),
+                SizedBox(
+                  height: variableHeight * 0.8,
+                  child: Chart(_recentTransactions),
+                ),
+              ],
+            )
+          : SingleChildScrollView(
+              child: Column(
+                children: [
+                  SizedBox(
+                    height: variableHeight * 0.4,
+                    child: Chart(_recentTransactions),
+                  ),
+                  SizedBox(
+                    height: variableHeight * 0.6,
+                    child:
+                        TransactionList(_userTransaction, _deleteTransaction),
+                  ),
+                ],
+              ),
             ),
-            SizedBox(
-              height: (MediaQuery.of(context).size.height -
-                      variableAppBar.preferredSize.height -
-                      MediaQuery.of(context).padding.top) *
-                  0.6,
-              child: TransactionList(_userTransaction, _deleteTransaction),
-            ),
-          ],
-        ),
-      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _startAddNewTransaction(context),
         child: const Icon(Icons.add),
